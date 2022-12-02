@@ -1,0 +1,4 @@
+#! /usr/bin/env python3
+import sys
+print("\u001b[31mError\u001b[0m: an error message sent to stderr", file=sys.stderr)
+print("\u001b[33mInfo\u001b[0m: some information sent to stdout", file=sys.stdout)
