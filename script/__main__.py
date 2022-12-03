@@ -10,39 +10,47 @@ from uuid import UUID
 from script.emotions import emotions
 from script.users import username
 
-signal(SIGPIPE,SIG_DFL)
-_log = logging.getLogger(__name__)
-NUM_USERS = 314
+signal(SIGPIPE, SIG_DFL)
 random.seed(123)
+_log = logging.getLogger(__name__)
 
-rnd = random.Random()
-rnd.seed(123)
+SLEEP_FACTOR = 3
+NUM_USERS = 1000
+IGNORED_PERCENTAGE = 0.25
+ERRORS = 8
+RND = random.Random()
+
+RND.seed(123)
 
 async def main():
     _log.info("Handling %s users", NUM_USERS)
-    for _ in range(NUM_USERS):
-        await action(username())
+    await asyncio.gather(*(action(username()) for _ in range(NUM_USERS)))
 
+async def sleep():
+    await asyncio.sleep(random.random() * SLEEP_FACTOR)
 
 async def action(user: str):
-    action_id = UUID(int=rnd.getrandbits(128), version=4)
+    action_id = UUID(int=RND.getrandbits(128), version=4)
     _log.info("[%s] Found %s", action_id, user)
-    if random.random() > 0.8:
+    await sleep()
+
+    if random.random() > IGNORED_PERCENTAGE:
         _log.info("[%s] %s needs fixing", action_id, user)
         _log.debug("[%s] Determining emotion", action_id)
-        await asyncio.sleep(random.random() / 10)
+        await sleep()
         emotion = random.choice(emotions)
         if user.startswith(emotion):
             _log.warning("[%s] Emotion hasn't changed", action_id)
         else:
             _log.debug("[%s] %s is now feeling '%s'", action_id, user, emotion)
             _log.info("[%s] Fixing emotion", action_id)
-            await asyncio.sleep(random.random() / 10)
-            if random.random() > 0.2:
+            await sleep()
+            if random.random() < ERRORS / NUM_USERS * IGNORED_PERCENTAGE * 7:
                 _log.error("[%s] %s stuck in machine!", action_id, user)
             else:
                 _log.info("[%s] %s emotion successfully fixed", action_id, user)
     else:
+        await sleep()
         _log.warning("[%s] Ignoring %s", action_id, user)
 
 
@@ -72,22 +80,15 @@ class CustomFormatter(logging.Formatter):
 if __name__ == "__main__":
     log_queue = queue.Queue()
     queue_handler = QueueHandler(log_queue)
-    stdout_handler = logging.StreamHandler(stream=sys.stdout)
-    stdout_handler.setFormatter(CustomFormatter())
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(queue_handler)
-    # create console handler with a higher log level
-    # ch = logging.StreamHandler()
-    # ch.setFormatter(CustomFormatter())
-    #
-    # logger.addHandler(ch)
-    # logging.basicConfig(
-    #     level=logging.DEBUG,
-    #     format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-    #     handlers=[queue_handler]
-    # )
+
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
+    stdout_handler.setFormatter(CustomFormatter())
+
     queue_listener = QueueListener(log_queue, stdout_handler)
     queue_listener.start()
+
     asyncio.run(main())
