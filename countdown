@@ -1,0 +1,10 @@
+#! /usr/bin/env python3
+from time import sleep
+sleep(1)
+print("3️⃣")
+sleep(1)
+print("2️⃣")
+sleep(1)
+print("1️⃣")
+sleep(1)
+print("🚀")

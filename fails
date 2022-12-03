@@ -1,0 +1,5 @@
+#! /usr/bin/env python3
+import sys
+print("\u001b[31mError\u001b[0m: Something went bang!", file=sys.stderr)
+print("Program failed 😭")
+sys.exit(1)

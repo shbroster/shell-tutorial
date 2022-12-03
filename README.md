@@ -11,17 +11,18 @@ Simply checkout this repository and open your shell in the checked-out directory
 ## Installation
 
 ```shell
-python3 -m venv venv --prompt shell-tutorial
+python3.10 -m venv venv --prompt shell-tutorial
 source venv/bin/activate
 pip install -r requirements.txt
 python -m bash_kernel.install
+cp -R venv/share/jupyter/nbconvert ~/Library/Jupyter/nbconvert
 ```
 
 ## Running the Presentation
 
 ```shell
 source venv/bin/activate
-jupyter nbconvert Tutorial.ipynb --to slides --post serve
+jupyter nbconvert shell_tutorial.ipynb --to slides --post serve
 deactivate
 ```
 

@@ -1,5 +1,6 @@
 *.html
 *.idea
 *~
+*.log
 venv
 .ipynb_checkpoints/
